@@ -45,6 +45,7 @@ public class AuthorizationServerConfig {
 	
 	@Bean
 	public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
+		// OAuth2ClientAuthenticationConfigurer.createDefaultAuthenticationProviders() 用到，在 OAuth2ConfigurerUtils.getRegisteredClientRepository() 取得此 bean
 		RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
 				.clientId("messaging-client")
 				.clientSecret("{noop}secret")
@@ -72,16 +73,19 @@ public class AuthorizationServerConfig {
 
 	@Bean
 	public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate, RegisteredClientRepository registeredClientRepository) {
+		// 此 bean 移除不影響操作，會使用 InMemoryOAuth2AuthorizationService，用於將 OAuth2Authorization 存入 DB
 		return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
 	}
 
 	@Bean
 	public OAuth2AuthorizationConsentService authorizationConsentService(JdbcTemplate jdbcTemplate, RegisteredClientRepository registeredClientRepository) {
+		// 此 bean 移除不影響操作，會使用 InMemoryOAuth2AuthorizationConsentService，用於將 OAuth2AuthorizationConsent 存入 DB
 		return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository);
 	}
 
 	@Bean
 	public JWKSource<SecurityContext> jwkSource() {
+		// OAuth2AuthorizationServerConfigurer.configure() 用到，在 OAuth2ConfigurerUtils.getJwkSource() 取得此 bean
 		RSAKey rsaKey = Jwks.generateRsa();
 		JWKSet jwkSet = new JWKSet(rsaKey);
 		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
@@ -89,6 +93,7 @@ public class AuthorizationServerConfig {
 
 	@Bean
 	public ProviderSettings providerSettings() {
+		// OAuth2AuthorizationServerConfigurer.init() 用到，在 OAuth2ConfigurerUtils.getProviderSettings() 取得此 bean
 		return ProviderSettings.builder().issuer("http://auth-server:9000").build();
 	}
 
